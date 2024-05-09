@@ -1,0 +1,84 @@
+---
+title: "CDS Final Project Group 3"
+author: "Group 3"
+date: "`r Sys.Date()`"
+output: pdf_document
+fontsize: 11pt
+documentclass: article
+geometry: margin=1in
+---
+
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(ggplot2))
+customer_churn <- read_csv("Customer-Churn-Records.csv", show_col_types = FALSE)
+```
+
+***
+
+##LABS
+
+```{r}
+customer_churn_updated <- customer_churn %>%
+  rename(Client_Gender = Gender,
+         Client_Age = Age,
+         Customer_Exited = Exited)
+```
+
+```{r}
+customer_churn_updated <- customer_churn_updated %>%
+  mutate(
+    Customer_Exited = recode(Customer_Exited, 
+                    "0" = "No",
+                    "1" = "Yes")
+  )
+```
+
+```{r}
+churned <- customer_churn_updated %>%
+  filter(Customer_Exited == "Yes")
+
+non_churned <- customer_churn_updated %>%
+  filter(Customer_Exited == "No")
+num_samples <- ceiling(nrow(non_churned) * 6 / 4)
+
+non_churned_sampled <- non_churned %>%
+  sample_n(size = num_samples, replace = TRUE)
+customer_churn_balanced <- bind_rows(churned, non_churned_sampled)
+```
+
+```{r}
+gender_summary <- customer_churn_balanced %>%
+  group_by(Client_Gender, Customer_Exited) %>%
+  summarize(Count = n(), .groups = "drop") %>%
+  mutate(Percentage = Count / sum(Count) * 100)
+```
+
+```{r}
+ggplot(gender_summary, aes(x = Client_Gender, y = Percentage, fill = as.factor(Customer_Exited))) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Gender", y = "Percentage (%)", fill = "Exited Status") +
+  ggtitle("Customer Churn by Gender")
+```
+
+```{r}
+customer_churn_balanced <- customer_churn_balanced %>%
+  mutate(Age_Group = cut(Client_Age, breaks = c(0, 30, 45, 60, 100), 
+                         labels = c("0-30", "31-45", "46-60", "60+")))
+```
+
+```{r}
+age_summary <- customer_churn_balanced %>%
+  group_by(Age_Group, Customer_Exited) %>%
+  summarize(Count = n(), .groups = "drop") %>%
+  mutate(Percentage = Count / sum(Count) * 100)
+```
+
+```{r}
+ggplot(age_summary, aes(x = Age_Group, y = Percentage, fill = as.factor(Customer_Exited))) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Age Group", y = "Percentage (%)", fill = "Exited Status") +
+  ggtitle("Customer Churn by Age Group")
+```
