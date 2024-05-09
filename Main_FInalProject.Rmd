@@ -1,5 +1,5 @@
 ---
-title: "CDS Final Project Group 3"
+title: "Final Project Group 3"
 author: "Group 3"
 date: "`r Sys.Date()`"
 output: pdf_document
