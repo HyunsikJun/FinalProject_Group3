@@ -19,66 +19,49 @@ customer_churn <- read_csv("Customer-Churn-Records.csv", show_col_types = FALSE)
 ***
 
 ##LABS
-
 ```{r}
-customer_churn_updated <- customer_churn %>%
-  rename(Client_Gender = Gender,
-         Client_Age = Age,
-         Customer_Exited = Exited)
-```
-
-```{r}
-customer_churn_updated <- customer_churn_updated %>%
+customer_churn <- customer_churn %>%
   mutate(
-    Customer_Exited = recode(Customer_Exited, 
+    Exited = recode(Exited, 
                     "0" = "No",
                     "1" = "Yes")
   )
 ```
 
 ```{r}
-churned <- customer_churn_updated %>%
-  filter(Customer_Exited == "Yes")
-
-non_churned <- customer_churn_updated %>%
-  filter(Customer_Exited == "No")
-num_samples <- ceiling(nrow(non_churned) * 6 / 4)
-
-non_churned_sampled <- non_churned %>%
-  sample_n(size = num_samples, replace = TRUE)
-customer_churn_balanced <- bind_rows(churned, non_churned_sampled)
+check_ratio <- function(counts) {
+  total <- sum(counts)
+  ratio <- max(counts) / total
+  return(ratio >= 0.7)}
 ```
 
-```{r}
-gender_summary <- customer_churn_balanced %>%
-  group_by(Client_Gender, Customer_Exited) %>%
-  summarize(Count = n(), .groups = "drop") %>%
-  mutate(Percentage = Count / sum(Count) * 100)
+```{r} 
+ggplot(customer_churn, aes(x = Age, fill = Exited)) +
+  geom_histogram(binwidth = 5, position = "dodge") +
+  labs(
+    title = "Histogram of Age Distribution by Exited Status",
+    x = "Age",
+    y = "Count",
+    fill = "Exited Status"
+  ) +
+  theme_minimal()
 ```
 
-```{r}
-ggplot(gender_summary, aes(x = Client_Gender, y = Percentage, fill = as.factor(Customer_Exited))) +
+```{r} 
+# Bar plot for Gender vs Exited
+gender_vs_exited <- customer_churn %>%
+  group_by(Gender, Exited) %>%
+  summarise(count = n(), .groups = 'drop')
+ggplot(gender_vs_exited, aes(x = Gender, y = count, fill = Exited)) +
   geom_bar(stat = "identity", position = "dodge") +
-  labs(x = "Gender", y = "Percentage (%)", fill = "Exited Status") +
-  ggtitle("Customer Churn by Gender")
+  labs(
+    title = "Bar Plot of Gender Distribution by Exited Status",
+    x = "Gender",
+    y = "Count",
+    fill = "Exited Status"
+  ) +
+  theme_minimal()
 ```
 
-```{r}
-customer_churn_balanced <- customer_churn_balanced %>%
-  mutate(Age_Group = cut(Client_Age, breaks = c(0, 30, 45, 60, 100), 
-                         labels = c("0-30", "31-45", "46-60", "60+")))
-```
 
-```{r}
-age_summary <- customer_churn_balanced %>%
-  group_by(Age_Group, Customer_Exited) %>%
-  summarize(Count = n(), .groups = "drop") %>%
-  mutate(Percentage = Count / sum(Count) * 100)
-```
-
-```{r}
-ggplot(age_summary, aes(x = Age_Group, y = Percentage, fill = as.factor(Customer_Exited))) +
-  geom_bar(stat = "identity", position = "dodge") +
-  labs(x = "Age Group", y = "Percentage (%)", fill = "Exited Status") +
-  ggtitle("Customer Churn by Age Group")
-```
+TEST
