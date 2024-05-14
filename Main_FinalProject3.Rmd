@@ -36,10 +36,6 @@ customer_churn <- customer_churn %>%
                     "1" = "Yes")
   )
 ```
-```{r}
-# Checking the structure
-str(customer_churn)
-```
 
 ```{r}
 # Analysis for Age vs Exited
@@ -61,38 +57,6 @@ gender_vs_exited <- customer_churn %>%
   spread(Exited, count, fill = 0) %>%
   rowwise() %>%
   mutate(SignificantDifference = check_ratio(c_across(c("Yes", "No"))))
-```
-
-```{r}
-# Plot Age difference rate (marking significant differences)
-ggplot(age_vs_exited, aes(x = AgeGroup)) +
-  geom_bar(aes(y = Yes, fill = "Yes"), stat = "identity", position = "stack") +
-  geom_bar(aes(y = -No, fill = "No"), stat = "identity", position = "stack") +
-  geom_text(aes(y = 0, label = ifelse(SignificantDifference, "7:3 Significant", "")), vjust = -0.5) +
-  scale_y_continuous(labels = abs) +
-  labs(
-    title = "Age Groups vs Exited Status",
-    x = "Age Group",
-    y = "Count",
-    fill = "Exited Status"
-  ) +
-  theme_minimal()
-```
-
-```{r}
-# Plot Gender difference rate (marking significant differences)
-ggplot(gender_vs_exited, aes(x = Gender)) +
-  geom_bar(aes(y = Yes, fill = "Yes"), stat = "identity", position = "stack") +
-  geom_bar(aes(y = -No, fill = "No"), stat = "identity", position = "stack") +
-  geom_text(aes(y = 0, label = ifelse(SignificantDifference, "7:3 Significant", "")), vjust = -0.5) +
-  scale_y_continuous(labels = abs) +
-  labs(
-    title = "Gender vs Exited Status",
-    x = "Gender",
-    y = "Count",
-    fill = "Exited Status"
-  ) +
-  theme_minimal()
 ```
 
 ```{r}
